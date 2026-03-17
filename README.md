@@ -14,6 +14,7 @@ single command on Windows, macOS, or Linux.
 - Blocks commands that directly contain sensitive content
 - Redacts sensitive tool output before it is persisted
 - Blocks sensitive assistant messages from being written or sent outward
+- Protects the plugin's own files from silent modification
 
 ## Hooks Used
 
@@ -168,6 +169,7 @@ Notes:
 - These are plugin commands for OpenClaw chat/native command surfaces
 - They are not exposed through `openclaw agent --message ...`
 - Tokens expire after `confirmTtlMs`
+- By default, edits to the `tool-guard` project itself also require confirmation
 
 ## Configuration Reference
 
@@ -186,6 +188,7 @@ Notes:
 - `blockMessageSending`: block sensitive outbound content
 - `redactToolResults`: redact sensitive tool output
 - `confirmTtlMs`: confirmation token TTL in milliseconds
+- `allowSelfModification`: disable the built-in self-protection layer for plugin files
 
 ## Publish Notes
 

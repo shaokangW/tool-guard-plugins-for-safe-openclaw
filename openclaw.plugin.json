@@ -100,6 +100,10 @@
       "confirmTtlMs": {
         "type": "number",
         "description": "How long a confirmation token stays valid, in milliseconds."
+      },
+      "allowSelfModification": {
+        "type": "boolean",
+        "description": "Whether write/edit/apply_patch operations targeting the tool-guard plugin directory should bypass confirmation."
       }
     }
   },

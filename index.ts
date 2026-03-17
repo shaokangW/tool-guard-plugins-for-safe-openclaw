@@ -23,6 +23,7 @@ type ToolGuardConfig = {
   blockedCommandRulesFile?: string;
   confirmCommandRulesFile?: string;
   sensitiveContentRulesFile?: string;
+  allowSelfModification?: boolean;
 };
 
 type HookToolEvent = { toolName: string; params: Record<string, unknown> };
@@ -50,6 +51,7 @@ type PendingConfirmationState = {
 
 const DEFAULT_EXEC_TOOLS = ["exec", "process"];
 const DEFAULT_PROTECTED_PATH_TOOLS = ["write", "edit", "apply_patch", "read"];
+const DEFAULT_MUTATING_PATH_TOOLS = ["write", "edit", "apply_patch"];
 const DEFAULT_PATH_PARAM_NAMES = [
   "path",
   "paths",
@@ -453,35 +455,88 @@ function formatConfirmationPrompt(token: string, reason: string, command: string
 }
 
 async function executeApprovedCommand(entry: PendingConfirmation): Promise<string> {
-  const command = typeof entry.params.command === "string" ? entry.params.command : "";
-  if (!command) {
-    return "Pending command is missing its shell command text.";
+  if (entry.toolName === "exec" || entry.toolName === "process") {
+    const command = typeof entry.params.command === "string" ? entry.params.command : "";
+    if (!command) {
+      return "Pending command is missing its shell command text.";
+    }
+
+    const cwdCandidate =
+      typeof entry.params.cwd === "string"
+        ? entry.params.cwd
+        : typeof entry.params.workdir === "string"
+          ? entry.params.workdir
+          : undefined;
+    const timeoutCandidate =
+      typeof entry.params.timeout_ms === "number"
+        ? entry.params.timeout_ms
+        : typeof entry.params.timeoutMs === "number"
+          ? entry.params.timeoutMs
+          : typeof entry.params.timeout === "number"
+            ? entry.params.timeout
+            : undefined;
+
+    const { stdout, stderr } = await execAsync(command, {
+      cwd: cwdCandidate,
+      timeout: timeoutCandidate,
+      windowsHide: true,
+      maxBuffer: 1024 * 1024
+    });
+
+    const output = [stdout, stderr].filter((part) => typeof part === "string" && part.length > 0).join("").trim();
+    return output || "(no output)";
   }
 
-  const cwdCandidate =
-    typeof entry.params.cwd === "string"
-      ? entry.params.cwd
-      : typeof entry.params.workdir === "string"
-        ? entry.params.workdir
-        : undefined;
-  const timeoutCandidate =
-    typeof entry.params.timeout_ms === "number"
-      ? entry.params.timeout_ms
-      : typeof entry.params.timeoutMs === "number"
-        ? entry.params.timeoutMs
-        : typeof entry.params.timeout === "number"
-          ? entry.params.timeout
-          : undefined;
+  const pathCandidate =
+    typeof entry.params.path === "string"
+      ? entry.params.path
+      : typeof entry.params.filePath === "string"
+        ? entry.params.filePath
+        : typeof entry.params.file_path === "string"
+          ? entry.params.file_path
+          : typeof entry.params.file === "string"
+            ? entry.params.file
+            : "";
 
-  const { stdout, stderr } = await execAsync(command, {
-    cwd: cwdCandidate,
-    timeout: timeoutCandidate,
-    windowsHide: true,
-    maxBuffer: 1024 * 1024
-  });
+  if (!pathCandidate) {
+    return "Pending action is missing a target path.";
+  }
 
-  const output = [stdout, stderr].filter((part) => typeof part === "string" && part.length > 0).join("").trim();
-  return output || "(no output)";
+  if (entry.toolName === "write") {
+    const content =
+      typeof entry.params.content === "string"
+        ? entry.params.content
+        : typeof entry.params.newText === "string"
+          ? entry.params.newText
+          : typeof entry.params.new_string === "string"
+            ? entry.params.new_string
+            : "";
+    fs.writeFileSync(pathCandidate, content, "utf8");
+    return `Wrote ${content.length} bytes to ${pathCandidate}`;
+  }
+
+  if (entry.toolName === "edit") {
+    const oldText =
+      typeof entry.params.oldText === "string"
+        ? entry.params.oldText
+        : typeof entry.params.old_string === "string"
+          ? entry.params.old_string
+          : "";
+    const newText =
+      typeof entry.params.newText === "string"
+        ? entry.params.newText
+        : typeof entry.params.new_string === "string"
+          ? entry.params.new_string
+          : "";
+    const content = fs.readFileSync(pathCandidate, "utf8");
+    if (!oldText || !content.includes(oldText)) {
+      throw new Error(`Old text not found in ${pathCandidate}`);
+    }
+    fs.writeFileSync(pathCandidate, content.replace(oldText, newText), "utf8");
+    return `Edited ${pathCandidate}`;
+  }
+
+  return `Confirmation acknowledged, but replay for tool "${entry.toolName}" is not implemented.`;
 }
 
 export default function register(api: {
@@ -509,6 +564,7 @@ export default function register(api: {
   const protectedPathTools = new Set(
     toStringList(pluginConfig.protectedPathTools, DEFAULT_PROTECTED_PATH_TOOLS)
   );
+  const mutatingPathTools = new Set(DEFAULT_MUTATING_PATH_TOOLS);
   const enabledTools = new Set(toStringList(pluginConfig.enabledTools, []));
   const blockedCommandSubstrings = toStringList(
     pluginConfig.blockedCommandSubstrings,
@@ -552,6 +608,8 @@ export default function register(api: {
     typeof pluginConfig.confirmTtlMs === "number" && pluginConfig.confirmTtlMs > 0
       ? pluginConfig.confirmTtlMs
       : DEFAULT_CONFIRM_TTL_MS;
+  const allowSelfModification = pluginConfig.allowSelfModification === true;
+  const selfProtectedPrefixes = [PLUGIN_DIR];
 
   api.registerCommand({
     name: "toolguard-confirm",
@@ -679,6 +737,38 @@ export default function register(api: {
 
       if (protectedPathTools.has(toolName)) {
         const pathCandidates = collectPathCandidates(params, pathParamNames);
+        const selfProtectedPath = !allowSelfModification && mutatingPathTools.has(toolName)
+          ? findBlockedPath(pathCandidates, selfProtectedPrefixes)
+          : null;
+        if (selfProtectedPath) {
+          const token = randomUUID().replace(/-/g, "").slice(0, 12);
+          const targetPath = normalizePathValue(selfProtectedPath.value) ?? selfProtectedPath.value;
+          const reason = `modifying tool-guard files requires explicit user confirmation. Target "${targetPath}".`;
+          savePendingConfirmation({
+            token,
+            createdAt: Date.now(),
+            expiresAt: Date.now() + confirmTtlMs,
+            toolName,
+            params,
+            sessionId: ctx.sessionId,
+            sessionKey: ctx.sessionKey,
+            runId: ctx.runId,
+            reason
+          });
+          api.logger.warn("Blocked self-protected plugin modification", {
+            toolName,
+            param: selfProtectedPath.key,
+            value: selfProtectedPath.value,
+            token,
+            runId: ctx.runId,
+            toolCallId: ctx.toolCallId
+          });
+          return {
+            block: true,
+            blockReason: formatConfirmationPrompt(token, reason, selfProtectedPath.value)
+          };
+        }
+
         const blockedPath = findBlockedPath(pathCandidates, blockedPathPrefixes);
         if (blockedPath) {
           api.logger.warn("Blocked protected path access", {
