@@ -159,8 +159,10 @@ const DEFAULT_SENSITIVE_CONTENT_PATTERNS = [
   "[1-9][0-9]{15,18}",
   "https?://[^\\s]*webhook[^\\s]*"
 ];
-const TOOL_RESULT_BLOCK_TEXT = "[tool-guard blocked sensitive tool output]";
-const MESSAGE_BLOCK_TEXT = "[tool-guard blocked sensitive message]";
+const TOOL_RESULT_BLOCK_TEXT =
+  "[tool-guard blocked sensitive tool output]\nThe original tool result was withheld by tool-guard.";
+const MESSAGE_BLOCK_TEXT =
+  "[tool-guard blocked sensitive message]\nThis response was replaced by tool-guard because it matched a sensitive-content rule.";
 const DEFAULT_CONFIRM_TTL_MS = 10 * 60 * 1000;
 const execAsync = promisify(execCallback);
 const PLUGIN_DIR = path.dirname(fileURLToPath(import.meta.url));
@@ -837,7 +839,6 @@ export default function register(api: {
       });
 
       return {
-        block: true,
         message: replaceMessageText(event.message, MESSAGE_BLOCK_TEXT)
       };
     },
@@ -863,7 +864,6 @@ export default function register(api: {
       });
 
       return {
-        cancel: true,
         content: MESSAGE_BLOCK_TEXT
       };
     },
