@@ -1,0 +1,33 @@
+{
+  "description": "Confirmation-required command rules",
+  "level": "confirm",
+  "commands": [
+    "rm.*-rf",
+    "rm.*-r",
+    "rmdir",
+    "chmod.*777",
+    "chown.*-R",
+    "chmod.*-x",
+    "chmod.*-w",
+    "rm.*/var/log",
+    "rm.*/usr/local",
+    "rm.*/tmp",
+    "rm.*~",
+    "kill.*-9",
+    "killall",
+    "pkill",
+    "curl.*-o.*/tmp",
+    "wget.*-O.*/tmp",
+    "cat.*/etc/passwd",
+    "cat.*/etc/shadow",
+    "vi.*/etc/passwd",
+    "vim.*/etc/passwd",
+    "nano.*/etc/passwd",
+    "sed.*-i.*/etc/",
+    "tee.*/etc/",
+    "userdel",
+    "groupdel",
+    "usermod",
+    "groupmod"
+  ]
+}

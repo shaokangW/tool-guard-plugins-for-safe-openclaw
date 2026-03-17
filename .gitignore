@@ -1,0 +1,3 @@
+.tool-guard-state.json
+*.log
+node_modules/

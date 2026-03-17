@@ -1,0 +1,28 @@
+{
+  "name": "@wsk/tool-guard",
+  "version": "0.2.0",
+  "description": "OpenClaw plugin for execution validation, confirmation gating, and sensitive-content protection.",
+  "type": "module",
+  "license": "MIT",
+  "author": "wsk",
+  "keywords": [
+    "openclaw",
+    "plugin",
+    "security",
+    "guardrail",
+    "tooling"
+  ],
+  "files": [
+    "index.ts",
+    "openclaw.plugin.json",
+    "README.md",
+    "LICENSE",
+    "examples",
+    "scripts"
+  ],
+  "openclaw": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}

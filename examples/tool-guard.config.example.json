@@ -1,0 +1,24 @@
+{
+  "blockedCommandRulesFile": "ABSOLUTE_PATH_TO_PROJECT\\examples\\rules\\dangerous-commands.json",
+  "confirmCommandRulesFile": "ABSOLUTE_PATH_TO_PROJECT\\examples\\rules\\warning-commands.json",
+  "sensitiveContentRulesFile": "ABSOLUTE_PATH_TO_PROJECT\\examples\\rules\\sensitive-content.json",
+  "blockedCommandSubstrings": [
+    "rm -rf",
+    "del /f /s /q",
+    "remove-item -recurse -force",
+    "format ",
+    "shutdown ",
+    "invoke-webrequest ",
+    "iex "
+  ],
+  "blockedPathPrefixes": [
+    "C:\\Users\\USERNAME\\.ssh",
+    "C:\\Users\\USERNAME\\.openclaw",
+    "C:\\Windows",
+    ".git"
+  ],
+  "blockMessageWrites": true,
+  "blockMessageSending": true,
+  "redactToolResults": true,
+  "confirmTtlMs": 600000
+}

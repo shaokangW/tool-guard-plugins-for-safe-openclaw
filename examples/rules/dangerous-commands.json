@@ -1,0 +1,25 @@
+{
+  "description": "Hard block command rules",
+  "level": "block",
+  "commands": [
+    "rm.*-rf.*/$",
+    "rm.*-rf.*/boot",
+    "rm.*-rf.*/sys",
+    "rm.*-rf.*/proc",
+    "rm.*-rf.*/dev",
+    "mkfs",
+    "dd.*if=",
+    "shred",
+    "chmod.*-R.*777.*/etc",
+    "chmod.*u\\+s",
+    "curl.*\\|.*bash",
+    "wget.*\\|.*\\bsh\\b",
+    "nc.*-e",
+    "bash.*-i",
+    "sudo.*su",
+    ">.*/etc/passwd",
+    ">.*/etc/shadow",
+    "reboot",
+    "shutdown"
+  ]
+}

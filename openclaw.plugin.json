@@ -1,0 +1,117 @@
+{
+  "id": "tool-guard",
+  "name": "Tool Guard",
+  "description": "Blocks dangerous tool calls before execution.",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "enabledTools": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "Optional allowlist of tool names this guard should inspect. When empty, all tools are inspected."
+      },
+      "blockedCommandSubstrings": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "Case-insensitive command fragments that should block exec-like tools."
+      },
+      "blockedPathPrefixes": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "Paths that cannot be targeted by write/edit style tools."
+      },
+      "blockedCommandPatterns": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "Regex patterns that should hard-block shell-like tool calls."
+      },
+      "blockedCommandRulesFile": {
+        "type": "string",
+        "description": "Path to a JSON file with a top-level commands array for hard-block shell rules."
+      },
+      "confirmCommandPatterns": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "Regex patterns that should require user confirmation before shell-like tool calls."
+      },
+      "confirmCommandRulesFile": {
+        "type": "string",
+        "description": "Path to a JSON file with a top-level commands array for confirmation-required shell rules."
+      },
+      "sensitiveContentPatterns": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "Regex patterns that should block or redact sensitive content."
+      },
+      "sensitiveContentRulesFile": {
+        "type": "string",
+        "description": "Path to a JSON file containing sensitive-content regex rules."
+      },
+      "protectedPathTools": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "Tool names whose path-like params should be checked against blockedPathPrefixes."
+      },
+      "execTools": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "Tool names treated as shell/command execution tools."
+      },
+      "pathParamNames": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "Parameter names to treat as file paths during path validation."
+      },
+      "logAllowedCalls": {
+        "type": "boolean",
+        "description": "Whether to log inspected tool calls that were allowed."
+      },
+      "blockMessageWrites": {
+        "type": "boolean",
+        "description": "Whether to block assistant/tool messages that contain sensitive content before they are written to the session."
+      },
+      "blockMessageSending": {
+        "type": "boolean",
+        "description": "Whether to block outbound channel messages that contain sensitive content."
+      },
+      "redactToolResults": {
+        "type": "boolean",
+        "description": "Whether to redact sensitive tool results before persistence."
+      },
+      "confirmTtlMs": {
+        "type": "number",
+        "description": "How long a confirmation token stays valid, in milliseconds."
+      }
+    }
+  },
+  "uiHints": {
+    "enabledTools": {
+      "label": "Enabled tools"
+    },
+    "blockedCommandSubstrings": {
+      "label": "Blocked command substrings"
+    },
+    "blockedPathPrefixes": {
+      "label": "Blocked path prefixes"
+    }
+  }
+}
