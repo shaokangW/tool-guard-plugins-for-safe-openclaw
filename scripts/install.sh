@@ -15,7 +15,6 @@ openclaw plugins install -l "${PROJECT_ROOT}"
 
 PROJECT_ROOT="${PROJECT_ROOT}" RULES_ROOT="${RULES_ROOT}" CONFIG_PATH="${CONFIG_PATH}" node --input-type=module <<'EOF'
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 
 const projectRoot = process.env.PROJECT_ROOT;
@@ -52,14 +51,6 @@ config.plugins.entries["tool-guard"] = {
       "shutdown ",
       "invoke-webrequest ",
       "iex "
-    ],
-    blockedPathPrefixes: [
-      path.join(os.homedir(), ".ssh"),
-      path.join(os.homedir(), ".openclaw"),
-      "/etc",
-      "/usr",
-      "/System",
-      ".git"
     ],
     blockMessageWrites: true,
     blockMessageSending: true,

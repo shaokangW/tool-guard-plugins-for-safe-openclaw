@@ -591,12 +591,7 @@ export default function register(api: {
       ...toStringList(pluginConfig.sensitiveContentPatterns, [])
     ]
   );
-  const blockedPathPrefixes = toStringList(pluginConfig.blockedPathPrefixes, [
-    path.join(process.env.USERPROFILE ?? "C:\\Users\\Default", ".ssh"),
-    path.join(process.env.USERPROFILE ?? "C:\\Users\\Default", ".openclaw"),
-    path.join(process.env.SystemRoot ?? "C:\\Windows"),
-    ".git"
-  ]);
+  const blockedPathPrefixes = toStringList(pluginConfig.blockedPathPrefixes, []);
   const pathParamNames = new Set(
     toStringList(pluginConfig.pathParamNames, DEFAULT_PATH_PARAM_NAMES)
   );

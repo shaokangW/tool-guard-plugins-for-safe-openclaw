@@ -1,7 +1,7 @@
 # Tool Guard
 
 `tool-guard` is an OpenClaw plugin for execution validation, confirmation gating,
-protected-path blocking, and sensitive-content protection.
+self-protection for plugin files, and sensitive-content protection.
 
 It is designed to be published as a standalone project and installed with a
 single command on Windows, macOS, or Linux.
@@ -10,7 +10,6 @@ single command on Windows, macOS, or Linux.
 
 - Blocks dangerous shell commands before execution
 - Blocks medium-risk commands and turns them into explicit confirmation actions
-- Blocks reads and writes against protected paths
 - Blocks commands that directly contain sensitive content
 - Redacts sensitive tool output before it is persisted
 - Blocks sensitive assistant messages from being written or sent outward
@@ -114,12 +113,6 @@ Then add config like this:
             "del /f /s /q",
             "remove-item -recurse -force"
           ],
-          "blockedPathPrefixes": [
-            "/home/USERNAME/.ssh",
-            "/home/USERNAME/.openclaw",
-            "/etc",
-            ".git"
-          ],
           "blockMessageWrites": true,
           "blockMessageSending": true,
           "redactToolResults": true,
@@ -180,7 +173,7 @@ Notes:
 - `confirmCommandRulesFile`: external JSON for confirmation rules
 - `sensitiveContentPatterns`: regex rules for sensitive content
 - `sensitiveContentRulesFile`: external JSON for sensitive-content rules
-- `blockedPathPrefixes`: protected paths
+- `blockedPathPrefixes`: optional extra protected paths beyond the built-in plugin self-protection
 - `protectedPathTools`: tools that should receive path checks
 - `execTools`: tools treated as command-execution tools
 - `pathParamNames`: parameter names that should be treated as paths

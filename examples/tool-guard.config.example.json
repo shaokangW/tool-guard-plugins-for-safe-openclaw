@@ -11,12 +11,6 @@
     "invoke-webrequest ",
     "iex "
   ],
-  "blockedPathPrefixes": [
-    "C:\\Users\\USERNAME\\.ssh",
-    "C:\\Users\\USERNAME\\.openclaw",
-    "C:\\Windows",
-    ".git"
-  ],
   "blockMessageWrites": true,
   "blockMessageSending": true,
   "redactToolResults": true,

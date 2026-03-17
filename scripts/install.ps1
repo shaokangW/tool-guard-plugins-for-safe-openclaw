@@ -39,7 +39,6 @@ if (-not $config.plugins.entries) {
   $config.plugins | Add-Member -NotePropertyName entries -NotePropertyValue ([pscustomobject]@{})
 }
 
-$userHome = [Environment]::GetFolderPath("UserProfile")
 $entryConfig = [pscustomobject]@{
   blockedCommandRulesFile = (Join-Path $rulesRoot "dangerous-commands.json")
   confirmCommandRulesFile = (Join-Path $rulesRoot "warning-commands.json")
@@ -52,12 +51,6 @@ $entryConfig = [pscustomobject]@{
     "shutdown ",
     "invoke-webrequest ",
     "iex "
-  )
-  blockedPathPrefixes = @(
-    (Join-Path $userHome ".ssh"),
-    (Join-Path $userHome ".openclaw"),
-    "C:\Windows",
-    ".git"
   )
   blockMessageWrites = $true
   blockMessageSending = $true
