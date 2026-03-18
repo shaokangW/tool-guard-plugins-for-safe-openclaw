@@ -1,10 +1,48 @@
-# Tool Guard
+<h1 align="center">Tool Guard for Safe OpenClaw</h1>
 
-`tool-guard` is an OpenClaw plugin for execution validation, confirmation gating,
-self-protection for plugin files, and sensitive-content protection.
+<p align="center">
+  Mechanism-level security guardrails for OpenClaw tool execution and content handling.
+</p>
 
-It is designed to be published as a standalone project and installed with a
-single command on Windows, macOS, or Linux.
+<p align="center">
+  <a href="https://github.com/shaokangW/tool-guard-plugins-for-safe-openclaw">Repository</a>
+  ·
+  <a href="./docs/PUBLISHING.md">Publishing</a>
+  ·
+  <a href="#one-click-install">Install</a>
+  ·
+  <a href="#configuration-reference">Config</a>
+</p>
+
+<p align="center">
+  <img alt="platform" src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-222222?style=for-the-badge">
+  <img alt="openclaw" src="https://img.shields.io/badge/OpenClaw-Plugin-e11d48?style=for-the-badge">
+  <img alt="security" src="https://img.shields.io/badge/security-tool%20guardrails-0f766e?style=for-the-badge">
+  <img alt="filtering" src="https://img.shields.io/badge/filtering-exec%20%26%20content-1d4ed8?style=for-the-badge">
+  <img alt="license" src="https://img.shields.io/badge/license-MIT-2563eb?style=for-the-badge">
+</p>
+
+<p align="center">
+  <strong>Block dangerous tool calls. Gate risky actions. Filter sensitive content.</strong>
+</p>
+
+`tool-guard` is an OpenClaw plugin that adds a hard security layer to the OpenClaw execution pipeline. Instead of relying only on prompts or skills, it hooks into tool-call and message-processing stages to enforce configurable rules for execution filtering, confirmation gating, output redaction, and outbound content moderation.
+
+It is designed to be published as a standalone project and installed with a single command on Windows, macOS, or Linux.
+
+## Repository Intro
+
+### 中文版
+
+`tool-guard` 是一个面向 OpenClaw 的安全防护插件，重点不是依赖模型“自觉遵守规则”，而是从 OpenClaw 的机制层直接接入工具调用与消息处理链路，在执行前、结果落盘前、消息发送前提供可配置的安全控制。
+
+它适合用来为 OpenClaw 增加一层稳定、可审计、可外部发布的安全能力，包括高风险工具调用拦截、需要确认的命令门控、敏感内容检测、工具输出脱敏，以及对回复内容的审查过滤。相比仅通过 prompt 或 skill 约束 agent 行为，`tool-guard` 更适合承担硬约束角色，尤其是在 subagent、多工具协作和自动化运行场景下，能够提供更一致的安全边界。
+
+### English
+
+`tool-guard` is a security plugin for OpenClaw that focuses on mechanism-level enforcement rather than prompt-only behavior shaping. It hooks directly into the OpenClaw tool and message pipeline to add configurable security controls before execution, before persistence, and before outbound delivery.
+
+It is designed for teams that want a durable, auditable safety layer for OpenClaw deployments, including high-risk tool-call blocking, confirmation gates for sensitive actions, flexible execution filtering, sensitive-content detection, tool-result redaction, and response/content moderation. Compared with relying on prompts or skills alone, `tool-guard` is meant to serve as a hard guardrail layer, especially in subagent, multi-tool, and automated execution workflows.
 
 ## What It Does
 
