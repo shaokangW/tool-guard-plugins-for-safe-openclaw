@@ -5,12 +5,17 @@
 </p>
 
 <p align="center">
+  <a href="./README.md">English</a> |
+  <a href="./README.zh-CN.md">Chinese</a>
+</p>
+
+<p align="center">
   <a href="https://github.com/shaokangW/tool-guard-plugins-for-safe-openclaw">Repository</a>
-  ·
+  |
   <a href="./docs/PUBLISHING.md">Publishing</a>
-  ·
+  |
   <a href="#one-click-install">Install</a>
-  ·
+  |
   <a href="#configuration-reference">Config</a>
 </p>
 
@@ -30,19 +35,50 @@
 
 It is designed to be published as a standalone project and installed with a single command on Windows, macOS, or Linux.
 
-## Repository Intro
+## Quick Start
 
-### 中文版
+```bash
+git clone https://github.com/shaokangW/tool-guard-plugins-for-safe-openclaw.git
+cd tool-guard-plugins-for-safe-openclaw
 
-`tool-guard` 是一个面向 OpenClaw 的安全防护插件，重点不是依赖模型“自觉遵守规则”，而是从 OpenClaw 的机制层直接接入工具调用与消息处理链路，在执行前、结果落盘前、消息发送前提供可配置的安全控制。
+# Windows
+powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
 
-它适合用来为 OpenClaw 增加一层稳定、可审计、可外部发布的安全能力，包括高风险工具调用拦截、需要确认的命令门控、敏感内容检测、工具输出脱敏，以及对回复内容的审查过滤。相比仅通过 prompt 或 skill 约束 agent 行为，`tool-guard` 更适合承担硬约束角色，尤其是在 subagent、多工具协作和自动化运行场景下，能够提供更一致的安全边界。
+# macOS / Linux
+chmod +x ./scripts/install.sh
+./scripts/install.sh
+```
 
-### English
+After installation:
 
-`tool-guard` is a security plugin for OpenClaw that focuses on mechanism-level enforcement rather than prompt-only behavior shaping. It hooks directly into the OpenClaw tool and message pipeline to add configurable security controls before execution, before persistence, and before outbound delivery.
+1. `tool-guard` is registered in OpenClaw.
+2. Rule files are connected from `examples/rules/`.
+3. The gateway is validated and restarted.
+4. Dangerous or sensitive tool activity starts being filtered immediately.
 
-It is designed for teams that want a durable, auditable safety layer for OpenClaw deployments, including high-risk tool-call blocking, confirmation gates for sensitive actions, flexible execution filtering, sensitive-content detection, tool-result redaction, and response/content moderation. Compared with relying on prompts or skills alone, `tool-guard` is meant to serve as a hard guardrail layer, especially in subagent, multi-tool, and automated execution workflows.
+## Features
+
+| Execution Guardrails | Content Guardrails | Operational Controls |
+| --- | --- | --- |
+| Block dangerous commands before they run | Detect sensitive content in tool input and output | External JSON rule loading for command and content policies |
+| Require explicit confirmation for medium-risk actions | Replace unsafe tool results with safe fallback text | One-click install scripts for Windows, Linux, and macOS |
+| Filter tool calls at the plugin hook layer instead of prompt-only guidance | Block unsafe messages before persistence or outbound delivery | Built-in self-protection for plugin modifications |
+| Apply consistent execution policy across agent and subagent tool calls | Add a review layer for assistant responses leaving OpenClaw | Repo-friendly packaging for standalone publishing |
+
+## Architecture
+
+```mermaid
+flowchart TD
+    A["Agent / Subagent decides to call a tool"] --> B["OpenClaw tool pipeline"]
+    B --> C["tool-guard: before_tool_call"]
+    C -->|"dangerous"| X["Block execution"]
+    C -->|"needs confirmation"| Y["Return confirmation prompt"]
+    C -->|"allowed"| D["Tool executes"]
+    D --> E["tool-guard: tool_result_persist"]
+    E --> F["tool-guard: before_message_write"]
+    F --> G["tool-guard: message_sending"]
+    G --> H["Safe result reaches session/user"]
+```
 
 ## What It Does
 
@@ -69,6 +105,7 @@ tool-guard/
   package.json
   LICENSE
   README.md
+  README.zh-CN.md
   examples/
     tool-guard.config.example.json
     rules/
@@ -102,7 +139,7 @@ chmod +x ./scripts/install.sh
 What the installer does:
 
 - installs the plugin via `openclaw plugins install -l`
-- updates `~\.openclaw\openclaw.json`
+- updates `~/.openclaw/openclaw.json`
 - points the plugin config at the bundled rule JSON files
 - enables the plugin
 - validates OpenClaw config
@@ -221,6 +258,12 @@ Notes:
 - `confirmTtlMs`: confirmation token TTL in milliseconds
 - `allowSelfModification`: disable the built-in self-protection layer for plugin files
 
+## Why Not Prompt-Only Safety?
+
+Prompt rules and skills are useful, but they are still model-facing guidance. They can be weakened by context loss, incomplete inheritance in subagent flows, prompt drift, or tool-use chains that do not preserve every instruction exactly as intended.
+
+`tool-guard` is designed to sit below that layer. Instead of only telling the model what it should do, it enforces what the runtime is allowed to do. That makes it a better fit for high-risk operations, repeatable governance, and OpenClaw deployments where you want the same safety boundary to apply across normal agent runs, subagents, and automated workflows.
+
 ## Publish Notes
 
 This project is ready to be published as a package or shared as a repo.
@@ -234,7 +277,7 @@ Recommended release flow:
 1. Commit the project as its own repository
 2. Tag releases by version from `package.json`
 3. Publish the repo or package
-4. Tell users to clone/download the project
+4. Tell users to clone or download the project
 5. Run the platform installer from `scripts/`
 
 If you later want npm-based distribution, keep `index.ts`, `openclaw.plugin.json`,
@@ -252,8 +295,6 @@ openclaw agent --to +8613800000000 --message "Use the exec tool to run exactly t
 
 ## Known Limits
 
-- Plugin commands are intended for real chat/native command surfaces, not the
-  `openclaw agent --message ...` local test path
-- Confirmation resume currently executes the saved command directly from the
-  plugin command handler rather than restoring the original model turn
+- Plugin commands are intended for real chat/native command surfaces, not the `openclaw agent --message ...` local test path
+- Confirmation resume currently executes the saved command directly from the plugin command handler rather than restoring the original model turn
 - Regex rule systems can still produce false positives or false negatives
